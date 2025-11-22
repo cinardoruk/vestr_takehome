@@ -1,0 +1,15 @@
+{
+  "name": "vestr",
+  "version": "1.0.0",
+  "description": "vestr take home assignment",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Cinar Doruk",
+  "license": "AGPL-3.0-only",
+  "dependencies": {
+    "better-sqlite3": "^12.4.6",
+    "express": "^5.1.0"
+  }
+}

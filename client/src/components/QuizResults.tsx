@@ -13,11 +13,12 @@ dayjs.extend(duration);
 //-   seconds: 0
 //- });
 interface QuizResultsProps {
-  startTime: Dayjs;
-  endTime: Dayjs;
+  answers: Record<number, number>;
+  startTime: Dayjs | null;
+  endTime: Dayjs | null;
 }
 
-export default function QuizResults({ startTime, endTime }: QuizResultsProps) {
+export default function QuizResults({ answers, startTime, endTime }: QuizResultsProps) {
   interface QuizResult {
     total: number;
     correct: number;
@@ -26,12 +27,27 @@ export default function QuizResults({ startTime, endTime }: QuizResultsProps) {
     level: string;
   }
 
+  // Correct answer IDs for each question
+  const correctAnswers = [3, 6, 10]; // Question 1: option 3, Question 2: option 6, Question 3: option 10
+
+  const totalQuestions = 3;
+  const correctCount = Object.values(answers).filter(answerId =>
+    correctAnswers.includes(answerId)
+  ).length;
+
+  const elapsedTime = startTime && endTime
+    ? dayjs.duration(endTime.diff(startTime))
+    : dayjs.duration(0);
+
+  const score = Math.round((correctCount / totalQuestions) * 100);
+  const level = score >= 70 ? "Passing" : "Needs Improvement";
+
   const testResult: QuizResult = {
-    total: 30,
-    correct: 17,
-    time: dayjs.duration(startTime.diff(endTime)),
-    score: 88,
-    level: "Passing",
+    total: totalQuestions,
+    correct: correctCount,
+    time: elapsedTime,
+    score: score,
+    level: level,
   };
 
   return (

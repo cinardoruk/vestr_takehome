@@ -1,17 +1,17 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "./ui/button";
-import type QuizAnswer from "./Quiz";
 
 interface QuizContentProps {
-  setEndTime: (state: endTime) => void;
-  answers: QuizAnswer[];
-  setAnswers: (state: answers) => void;
+  answers: Record<number, number>;
+  setAnswers: (answers: Record<number, number>) => void;
+  onFinish: () => void;
 }
 
 export default function QuizContent({
-  setEndTime,
+  answers,
   setAnswers,
+  onFinish,
 }: QuizContentProps) {
   //- Each question should have: id, questionText, options[], and some way of marking the correct option (not exposed to the frontend until submission, or not used on the client side).
   interface Option {
@@ -100,42 +100,45 @@ export default function QuizContent({
     },
   ];
 
-  function finishHandler() {
-    setEndTime(Date.now());
-  }
-
   return (
     <div>
       <div>
-        {questions.map((question, index) => {
-          return (
-            <div key={index} className="text-start *:my-2">
-              <h5 className="text-xl">Question {question.id}</h5>
-              <p className="font-bold">{question.questionText}</p>
-              <RadioGroup>
-                {question.options.map((option, index) => {
-                  return (
-                    <div key={index} className="flex my-1">
-                      <RadioGroupItem
-                        value={String(option.id)}
-                        id={String(option.id)}
-                        className="me-2"
-                      />
-                      <Label htmlFor={String(option.id)}>
-                        {option.optionText}
-                      </Label>
-                    </div>
-                  );
-                })}
-              </RadioGroup>
-            </div>
-          );
-        })}
+        {questions.map((question) => (
+          <div key={question.id} className="text-start *:my-2 mb-8">
+            <h5 className="text-xl">Question {question.id}</h5>
+            <p className="font-bold">{question.questionText}</p>
+            <RadioGroup
+              value={String(answers[question.id] || '')}
+              onValueChange={(value) => {
+                setAnswers({
+                  ...answers,
+                  [question.id]: Number(value),
+                });
+              }}
+            >
+              {question.options.map((option) => (
+                <div key={option.id} className="flex my-1">
+                  <RadioGroupItem
+                    value={String(option.id)}
+                    id={`q${question.id}-opt${option.id}`}
+                    className="me-2 cursor-pointer"
+                  />
+                  <Label
+                    htmlFor={`q${question.id}-opt${option.id}`}
+                    className="cursor-pointer"
+                  >
+                    {option.optionText}
+                  </Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        ))}
       </div>
-      <div className="flex justify-start my-10 ">
+      <div className="flex justify-start my-10">
         <Button
           className="green-filled font-bold rounded-xl cursor-pointer w-1/8"
-          onClick={finishHandler}
+          onClick={onFinish}
         >
           Finish Test
         </Button>

@@ -15,44 +15,58 @@ import dayjs, { Dayjs } from "dayjs";
   */
 
 type QuizState = "init" | "questions" | "results";
-export interface QuizAnswer {
-  question_id: number;
-  answer_id: number;
-}
+//- export interface QuizAnswer {
+//-   question_id: number;
+//-   answer_id: number;
+//- }
+export type QuizAnswer = Record<number, number>;
 
 export default function Quiz() {
   // Duration in seconds
-  const quizDuration = 5;
+  const quizDuration = 10;
 
   const [quizState, setQuizState] = useState<QuizState>("init");
-  const [startTime, setStartTime] = useState<Dayjs>(dayjs());
-  const [endTime, setEndTime] = useState<Dayjs>(dayjs());
-  const [answers, setAnswers] = useState<QuizAnswer[]>();
+  const [startTime, setStartTime] = useState<Dayjs | null>(null);
+  const [endTime, setEndTime] = useState<Dayjs | null>(null);
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+
+  const handleFinish = () => {
+    setEndTime(dayjs());
+    setQuizState("results");
+  };
 
   return (
     <div>
       <QuizHeader />
+
       <QuizBasicInfo
-        state={quizState}
-        setState={setQuizState}
-        quizDuration={quizDuration}
-        startTime={startTime}
-        setStartTime={setStartTime}
-        endTime={endTime}
-        setEndTime={setEndTime}
+        {...{
+          state: quizState,
+          setState: setQuizState,
+          quizDuration,
+          startTime,
+          setStartTime,
+          setEndTime,
+        }}
       />
+
       {quizState === "questions" && (
         <QuizContent
-          setEndTime={setEndTime}
-          answers={answers}
-          setAnswers={setAnswers}
+          {...{
+            answers,
+            setAnswers,
+            onFinish: handleFinish,
+          }}
         />
       )}
+
       {quizState === "results" && (
         <QuizResults
-          startTime={startTime}
-          endTime={endTime}
-          answers={answers}
+          {...{
+            answers,
+            startTime,
+            endTime,
+          }}
         />
       )}
     </div>

@@ -23,7 +23,7 @@ export default function QuizBasicInfo({
   setStartTime,
   setEndTime,
 }: QuizBasicInfoProps) {
-  // Initialize start time once when entering questions state
+  // init start time once when entering questions state
   if (state === "questions" && !startTime) {
     setStartTime(dayjs());
   }

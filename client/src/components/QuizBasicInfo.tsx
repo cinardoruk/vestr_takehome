@@ -1,62 +1,73 @@
-import dayjs from "dayjs";
-import relativeTime from "dayjs/plugin/relativeTime";
-dayjs.extend(relativeTime);
-
-
-import duration from "dayjs/plugin/duration";
-import type { Duration } from "dayjs/plugin/duration";
-dayjs.extend(duration);
-
-import Countdown from 'react-countdown';
-
+import Countdown from "react-countdown";
+import type { CountdownRenderProps } from "react-countdown";
 import { Button } from "./ui/button";
-import { useState } from "react";
+import type { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 
-export default function QuizBasicInfo() {
-  const [quizStatus, _setQuizStatus] = useState("Start");
-  const [timeLeft, _setTimeLeft] = useState();
+type QuizState = "init" | "questions" | "results";
 
-  //- const quizDuration = dayjs.duration({ minutes: 2 });
-  const quizDuration = 5;
+interface QuizBasicInfoProps {
+  state: QuizState;
+  setState: (state: QuizState) => void;
+  quizDuration: number; // seconds
+  startTime: Dayjs | null;
+  setStartTime: (time: Dayjs) => void;
+  setEndTime: (time: Dayjs) => void;
+}
 
-  // Random component
-  const Completionist = () => <span>You are good to go!</span>;
+export default function QuizBasicInfo({
+  state,
+  setState,
+  quizDuration,
+  startTime,
+  setStartTime,
+  setEndTime,
+}: QuizBasicInfoProps) {
+  // Initialize start time once when entering questions state
+  if (state === "questions" && !startTime) {
+    setStartTime(dayjs());
+  }
 
-  // Renderer callback with condition
-  const renderer = ({ hours, minutes, seconds, completed }) => {
+  // renderer callback to customize react-countdown component
+  const renderer = ({ minutes, seconds, completed }: CountdownRenderProps) => {
     if (completed) {
-      // Render a completed state
-      return <Completionist />;
+      if (startTime) {
+        setEndTime(startTime.add(quizDuration, "seconds"));
+      }
+      setState("results");
+      return null;
     } else {
       // Render a countdown
-      return <span>{hours}:{minutes}:{seconds}</span>;
+      return (
+        <span className="green font-bold">
+          {minutes} mins {seconds} seconds
+        </span>
+      );
     }
   };
 
-  function startTimer(){
-
-    return (
-    <Countdown
-      date={Date.now() + 1000 * quizDuration}
-      renderer={renderer}
-    />
-    )
-  }
-
-
-
   return (
     <div className="flex flex-col items-start gap-5 my-5">
-      <Button
-        variant="outline"
-        className="green font-bold rounded-2xl w-1/7 cursor-pointer"
-        onClick = startTimer
-      >
-        {quizStatus}
-      </Button>
-      <div className="green font-bold">
-        {quizDuration.format("mm")} mins {quizDuration.format("ss")} seconds
-      </div>
+      {/* before quiz starts */}
+      {state === "init" && (
+        <Button
+          variant="outline"
+          className="green font-bold rounded-2xl w-1/7 cursor-pointer"
+          onClick={() => setState("questions")}
+        >
+          Start
+        </Button>
+      )}
+
+      {/* during quiz */}
+      {state === "questions" && startTime && (
+        <div>
+          <Countdown
+            date={startTime.add(quizDuration, "seconds").valueOf()}
+            renderer={renderer}
+          />
+        </div>
+      )}
     </div>
   );
 }

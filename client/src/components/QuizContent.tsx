@@ -1,8 +1,18 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "./ui/button";
+import type QuizAnswer from "./Quiz";
 
-export default function QuizContent() {
+interface QuizContentProps {
+  setEndTime: (state: endTime) => void;
+  answers: QuizAnswer[];
+  setAnswers: (state: answers) => void;
+}
+
+export default function QuizContent({
+  setEndTime,
+  setAnswers,
+}: QuizContentProps) {
   //- Each question should have: id, questionText, options[], and some way of marking the correct option (not exposed to the frontend until submission, or not used on the client side).
   interface Option {
     id: number;
@@ -90,6 +100,10 @@ export default function QuizContent() {
     },
   ];
 
+  function finishHandler() {
+    setEndTime(Date.now());
+  }
+
   return (
     <div>
       <div>
@@ -119,7 +133,10 @@ export default function QuizContent() {
         })}
       </div>
       <div className="flex justify-start my-10 ">
-        <Button className="green-filled font-bold rounded-xl cursor-pointer w-1/8">
+        <Button
+          className="green-filled font-bold rounded-xl cursor-pointer w-1/8"
+          onClick={finishHandler}
+        >
           Finish Test
         </Button>
       </div>

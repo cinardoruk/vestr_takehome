@@ -1,6 +1,7 @@
 import dayjs from "dayjs";
 import duration from "dayjs/plugin/duration";
 import type { Duration } from "dayjs/plugin/duration";
+import type { Dayjs } from "dayjs";
 dayjs.extend(duration);
 
 //- import type { Dayjs } from "dayjs";
@@ -11,8 +12,12 @@ dayjs.extend(duration);
 //-   minutes: 30,
 //-   seconds: 0
 //- });
+interface QuizResultsProps {
+  startTime: Dayjs;
+  endTime: Dayjs;
+}
 
-export default function QuizResults() {
+export default function QuizResults({ startTime, endTime }: QuizResultsProps) {
   interface QuizResult {
     total: number;
     correct: number;
@@ -24,7 +29,7 @@ export default function QuizResults() {
   const testResult: QuizResult = {
     total: 30,
     correct: 17,
-    time: dayjs.duration({ minutes: 5, seconds: 23 }),
+    time: dayjs.duration(startTime.diff(endTime)),
     score: 88,
     level: "Passing",
   };

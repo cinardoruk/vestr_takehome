@@ -1,10 +1,10 @@
+import { useEffect } from "react";
 import Countdown from "react-countdown";
 import type { CountdownRenderProps } from "react-countdown";
 import { Button } from "./ui/button";
 import type { Dayjs } from "dayjs";
 import dayjs from "dayjs";
-
-type QuizState = "init" | "questions" | "results";
+import type { QuizState } from "./Quiz";
 
 interface QuizBasicInfoProps {
   state: QuizState;
@@ -24,9 +24,11 @@ export default function QuizBasicInfo({
   setEndTime,
 }: QuizBasicInfoProps) {
   // init start time once when entering questions state
-  if (state === "questions" && !startTime) {
-    setStartTime(dayjs());
-  }
+  useEffect(() => {
+    if (state === "questions" && !startTime) {
+      setStartTime(dayjs());
+    }
+  }, [state, startTime, setStartTime]);
 
   // renderer callback to customize react-countdown component
   const renderer = ({ minutes, seconds, completed }: CountdownRenderProps) => {

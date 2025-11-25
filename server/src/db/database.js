@@ -9,15 +9,13 @@ const __dirname = path.dirname(__filename);
 
 let db = null;
 
-/**
- * Initialize database connection and run schema
- */
+// init database connection and run schema
 export function initDatabase() {
   if (db) {
     return db;
   }
 
-  // Ensure data directory exists
+  // if (!data_directory) mkdir data_directory;
   const dbPath = path.resolve(config.database.path);
   const dbDir = path.dirname(dbPath);
 
@@ -25,33 +23,23 @@ export function initDatabase() {
     fs.mkdirSync(dbDir, { recursive: true });
   }
 
-  // Create database connection
+  // create database connection
   db = new Database(dbPath);
   db.pragma("journal_mode = WAL"); // write-ahead-logging for better concurrency
-  db.pragma("foreign_keys = ON"); // Enforce foreign keys
+  db.pragma("foreign_keys = ON"); // enforce foreign keys
 
-  // Run schema initialization
+  // run schema file against db
   const schemaPath = path.join(__dirname, "../../data/schema.sql");
   const schema = fs.readFileSync(schemaPath, "utf8");
 
-  // Execute schema (split by semicolon and run each statement)
-  const statements = schema
-    .split(";")
-    .map((s) => s.trim())
-    .filter((s) => s.length > 0);
-
-  for (const statement of statements) {
-    db.exec(statement);
-  }
+  db.exec(schema);
 
   console.log(`Database initialized at ${dbPath}`);
 
   return db;
 }
 
-/**
- * Get database instance
- */
+// get database instance. the db object stays here as a singleton and we grab it only through this function.
 export function getDatabase() {
   if (!db) {
     throw new Error("Database not initialized. Call initDatabase() first.");
@@ -59,9 +47,7 @@ export function getDatabase() {
   return db;
 }
 
-/**
- * Close database connection
- */
+// close database connection
 export function closeDatabase() {
   if (db) {
     db.close();
@@ -70,34 +56,8 @@ export function closeDatabase() {
   }
 }
 
-/**
- * Clean up expired cache entries
- */
-export function cleanExpiredCache() {
-  const db = getDatabase();
-  const stmt = db.prepare(
-    'DELETE FROM cache WHERE expires_at IS NOT NULL AND expires_at < datetime("now")',
-  );
-  const result = stmt.run();
-  return result.changes;
-}
-
-/**
- * Clean up expired sessions
- */
-export function cleanExpiredSessions() {
-  const db = getDatabase();
-  const stmt = db.prepare(
-    'DELETE FROM sessions WHERE expires_at < datetime("now")',
-  );
-  const result = stmt.run();
-  return result.changes;
-}
-
 export default {
   initDatabase,
   getDatabase,
   closeDatabase,
-  cleanExpiredCache,
-  cleanExpiredSessions,
 };

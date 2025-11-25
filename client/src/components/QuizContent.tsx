@@ -6,12 +6,16 @@ interface QuizContentProps {
   answers: Record<number, number>;
   setAnswers: (answers: Record<number, number>) => void;
   onFinish: () => void;
+  onReset: () => void;
+  showResults?: boolean;
 }
 
 export default function QuizContent({
   answers,
   setAnswers,
   onFinish,
+  onReset,
+  showResults = false,
 }: QuizContentProps) {
   //- Each question should have: id, questionText, options[], and some way of marking the correct option (not exposed to the frontend until submission, or not used on the client side).
   interface Option {
@@ -23,6 +27,13 @@ export default function QuizContent({
     questionText: string;
     options: Option[];
   }
+
+  // Correct answer IDs for each question
+  const correctAnswers: Record<number, number> = {
+    1: 3, // Question 1 correct answer is option 3
+    2: 6, // Question 2 correct answer is option 6
+    3: 10, // Question 3 correct answer is option 10
+  };
 
   const questions: QuizQuestion[] = [
     {
@@ -103,46 +114,101 @@ export default function QuizContent({
   return (
     <div>
       <div>
-        {questions.map((question) => (
-          <div key={question.id} className="text-start *:my-2 mb-8">
-            <h5 className="text-xl">Question {question.id}</h5>
-            <p className="font-bold">{question.questionText}</p>
-            <RadioGroup
-              value={String(answers[question.id] || '')}
-              onValueChange={(value) => {
-                setAnswers({
-                  ...answers,
-                  [question.id]: Number(value),
-                });
-              }}
-            >
-              {question.options.map((option) => (
-                <div key={option.id} className="flex my-1">
-                  <RadioGroupItem
-                    value={String(option.id)}
-                    id={`q${question.id}-opt${option.id}`}
-                    className="me-2 cursor-pointer"
-                  />
-                  <Label
-                    htmlFor={`q${question.id}-opt${option.id}`}
-                    className="cursor-pointer"
+        {questions.map((question) => {
+          const userAnswer = answers[question.id];
+          const correctAnswer = correctAnswers[question.id];
+          const isCorrect = userAnswer === correctAnswer;
+
+          return (
+            <div key={question.id} className="text-start *:my-2 mb-8">
+              {/* Question title with correct/incorrect indicator */}
+              <div className="flex items-center gap-2">
+                <h5 className="text-xl">Question {question.id}</h5>
+                {showResults && userAnswer && (
+                  <span
+                    className={
+                      isCorrect
+                        ? "text-green-500 font-bold"
+                        : "text-red-500 font-bold"
+                    }
                   >
-                    {option.optionText}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-        ))}
+                    {isCorrect ? "Correct" : "Incorrect"}
+                  </span>
+                )}
+              </div>
+
+              <p className="font-bold">{question.questionText}</p>
+
+              <RadioGroup
+                value={String(answers[question.id] || "")}
+                onValueChange={(value) => {
+                  if (!showResults) {
+                    // Only allow changes during quiz
+                    setAnswers({
+                      ...answers,
+                      [question.id]: Number(value),
+                    });
+                  }
+                }}
+                disabled={showResults}
+              >
+                {question.options.map((option) => {
+                  const isUserAnswer = userAnswer === option.id;
+                  const isCorrectOption = correctAnswer === option.id;
+
+                  // Color logic for results mode
+                  let colorClass = "";
+                  if (showResults) {
+                    if (isCorrectOption) {
+                      colorClass = "text-green-500";
+                    } else if (isUserAnswer && !isCorrect) {
+                      colorClass = "text-red-500";
+                    }
+                  }
+
+                  return (
+                    <div key={option.id} className={`flex my-1 p-2 rounded`}>
+                      <RadioGroupItem
+                        value={String(option.id)}
+                        id={`q${question.id}-opt${option.id}`}
+                        className="me-2 cursor-pointer "
+                      />
+                      <Label
+                        htmlFor={`q${question.id}-opt${option.id}`}
+                        className={`cursor-pointer ${colorClass}`}
+                      >
+                        {option.optionText}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </RadioGroup>
+            </div>
+          );
+        })}
       </div>
-      <div className="flex justify-start my-10">
-        <Button
-          className="green-filled font-bold rounded-xl cursor-pointer w-1/8"
-          onClick={onFinish}
-        >
-          Finish Test
-        </Button>
-      </div>
+
+      {/* Only show button during quiz */}
+      {!showResults && (
+        <div className="flex justify-start my-10">
+          <Button
+            className="green-filled font-bold rounded-xl cursor-pointer w-1/8"
+            onClick={onFinish}
+          >
+            Finish Test
+          </Button>
+        </div>
+      )}
+      {showResults && (
+        <div className="flex justify-start my-10">
+          <Button
+            className="green-filled font-bold rounded-xl cursor-pointer w-1/8"
+            onClick={onReset}
+          >
+            Back
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -14,7 +14,7 @@ import dayjs, { Dayjs } from "dayjs";
   'results' section is shown
   */
 
-type QuizState = "init" | "questions" | "results";
+export type QuizState = "init" | "questions" | "results";
 //- export interface QuizAnswer {
 //-   question_id: number;
 //-   answer_id: number;
@@ -35,6 +35,13 @@ export default function Quiz() {
     setQuizState("results");
   };
 
+  const handleReset = () => {
+    setQuizState("init");
+    setStartTime(null);
+    setEndTime(null);
+    setAnswers({});
+  };
+
   return (
     <div>
       <QuizHeader />
@@ -50,12 +57,14 @@ export default function Quiz() {
         }}
       />
 
-      {quizState === "questions" && (
+      {(quizState === "questions" || quizState === "results") && (
         <QuizContent
           {...{
             answers,
             setAnswers,
             onFinish: handleFinish,
+            onReset: handleReset,
+            showResults: quizState === "results",
           }}
         />
       )}
@@ -66,6 +75,8 @@ export default function Quiz() {
             answers,
             startTime,
             endTime,
+            quizState,
+            setQuizState,
           }}
         />
       )}

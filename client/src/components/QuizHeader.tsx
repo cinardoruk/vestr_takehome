@@ -1,12 +1,12 @@
 import { Button } from "./ui/button";
 export default function QuizHeader() {
   return (
-    <div className="*:text-left">
-      <Button variant="outline" className="flex rounded-full my-2">
+    <div className="*:text-left px-2 md:px-4">
+      <Button variant="outline" className="flex rounded-full my-2 text-sm md:text-base">
         Back
       </Button>
-      <h1 className="text-2xl font-bold mb-3">Financial Literacy Test</h1>
-      <p>
+      <h1 className="text-xl md:text-2xl font-bold mb-3">Financial Literacy Test</h1>
+      <p className="text-sm md:text-base leading-relaxed">
         This scoring system rewards both accuracy and exceptional speed with a
         tiered bonus structure. The test contains 30 questions,{" "}
         <b>each worth 5 points</b>, giving a total possible accuracy score of
@@ -18,7 +18,7 @@ export default function QuizHeader() {
         bonus points.{" "}
       </p>
 
-      <div className="my-2">
+      <div className="my-2 text-sm md:text-base">
         <p>
           <b>Pass</b>: 115+ points
         </p>

@@ -49,12 +49,12 @@ export default function QuizBasicInfo({
   };
 
   return (
-    <div className="flex flex-col items-start gap-5 my-5">
+    <div className="flex flex-col items-start gap-3 md:gap-5 my-5 px-2 md:px-4">
       {/* before quiz starts */}
       {state === "init" && (
         <Button
           variant="outline"
-          className="green font-bold rounded-2xl w-1/7 cursor-pointer"
+          className="green font-bold rounded-2xl w-full sm:w-auto px-6 cursor-pointer"
           onClick={() => setState("questions")}
         >
           Start
@@ -63,7 +63,7 @@ export default function QuizBasicInfo({
 
       {/* during quiz */}
       {state === "questions" && startTime && (
-        <div>
+        <div className="text-sm md:text-base">
           <Countdown
             key={startTime.valueOf()}
             date={startTime.add(quizDuration, "seconds").valueOf()}

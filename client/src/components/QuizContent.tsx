@@ -105,7 +105,7 @@ export default function QuizContent({
   ]; */
 
   return (
-    <div>
+    <div className="px-2 md:px-4">
       <div>
         {questions.map((question) => {
           const userAnswer = answers[question.id];
@@ -113,16 +113,16 @@ export default function QuizContent({
           const isCorrect = userAnswer === correctAnswer;
 
           return (
-            <div key={question.id} className="text-start *:my-2 mb-8">
+            <div key={question.id} className="text-start *:my-2 mb-6 md:mb-8">
               {/* Question title with correct/incorrect indicator */}
-              <div className="flex items-center gap-2">
-                <h5 className="text-xl">Question {question.id}</h5>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h5 className="text-lg md:text-xl">Question {question.id}</h5>
                 {showResults && userAnswer && (
                   <span
                     className={
                       isCorrect
-                        ? "text-green-500 font-bold"
-                        : "text-red-500 font-bold"
+                        ? "text-green-500 font-bold text-sm md:text-base"
+                        : "text-red-500 font-bold text-sm md:text-base"
                     }
                   >
                     {isCorrect ? "Correct" : "Incorrect"}
@@ -130,7 +130,7 @@ export default function QuizContent({
                 )}
               </div>
 
-              <p className="font-bold">{question.questionText}</p>
+              <p className="font-bold text-sm md:text-base">{question.questionText}</p>
 
               <RadioGroup
                 value={String(answers[question.id] || "")}
@@ -160,7 +160,7 @@ export default function QuizContent({
                   }
 
                   return (
-                    <div key={option.id} className={`flex my-1 p-2 rounded`}>
+                    <div key={option.id} className={`flex my-1 p-1 md:p-2 rounded`}>
                       <RadioGroupItem
                         value={String(option.id)}
                         id={`q${question.id}-opt${option.id}`}
@@ -168,7 +168,7 @@ export default function QuizContent({
                       />
                       <Label
                         htmlFor={`q${question.id}-opt${option.id}`}
-                        className={`cursor-pointer ${colorClass}`}
+                        className={`cursor-pointer text-sm md:text-base ${colorClass}`}
                       >
                         {option.optionText}
                       </Label>
@@ -185,7 +185,7 @@ export default function QuizContent({
       {!showResults && (
         <div className="flex justify-start my-10">
           <Button
-            className="green-filled font-bold rounded-xl cursor-pointer w-1/8"
+            className="green-filled font-bold rounded-xl cursor-pointer w-full sm:w-auto px-6"
             onClick={onFinish}
           >
             Finish Test
@@ -195,7 +195,7 @@ export default function QuizContent({
       {showResults && (
         <div className="flex justify-start my-10">
           <Button
-            className="green-filled font-bold rounded-xl cursor-pointer w-1/8"
+            className="green-filled font-bold rounded-xl cursor-pointer w-full sm:w-auto px-6"
             onClick={onReset}
           >
             Back

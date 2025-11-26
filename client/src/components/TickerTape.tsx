@@ -59,18 +59,18 @@ function TickerTape() {
   ];
 
   return (
-    <div className="flex mt-2">
+    <div className="flex mt-2 overflow-x-auto">
       {tickers.map((item, index) => {
         return (
-          <div key={index} className="flex items-center gap-1 me-5">
-            <div>{item.symbol}</div>
+          <div key={index} className="flex items-center gap-0.5 md:gap-1 me-2 md:me-5 flex-shrink-0 text-xs md:text-sm">
+            <div className="font-semibold">{item.symbol}</div>
             <div>{item.price}</div>
             {item.arrow === "up" ? (
-              <BiSolidUpArrow className="text-green-500" />
+              <BiSolidUpArrow className="text-green-500 text-[10px] md:text-xs" />
             ) : (
-              <BiSolidDownArrow className="text-red-500" />
+              <BiSolidDownArrow className="text-red-500 text-[10px] md:text-xs" />
             )}
-            <div className={item.pct > 0 ? "text-green-500" : "text-red-500"}>
+            <div className={`${item.pct > 0 ? "text-green-500" : "text-red-500"} hidden sm:inline`}>
               {item.pct}%
             </div>
           </div>

@@ -56,8 +56,8 @@ export default function QuizResults({
   };
 
   return (
-    <div className=" text-start p-3 bg-neutral-900 *:font-bold ">
-      <h4 className="mb-3">Results </h4>
+    <div className="text-start p-3 md:p-6 bg-neutral-900 *:font-bold max-w-md md:max-w-lg mx-auto text-sm md:text-base">
+      <h4 className="mb-3 text-lg md:text-xl">Results </h4>
       <p>
         Correct: <span className="green">{testResult.correct}</span>/
         {testResult.total}

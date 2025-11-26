@@ -7,14 +7,13 @@ A full-stack web application for a simple finance quiz: React app with quiz layo
 
 **Frontend:**
 - React 19 with TypeScript
-- Vite for build tooling
-- Tailwind CSS v4 for styling
-- shadcn/ui component library
+- Vite
+- Tailwind CSS
+- shadcn/ui
 
 **Backend:**
 - Node.js with Express
-- SQLite database (better-sqlite3)
-- RESTful API design
+- SQLite database w/ better-sqlite3 as driver
 
 ## Basic Project Structure
 
@@ -304,7 +303,7 @@ I presuppose ssh key auth for the vps: `deploy.sh` starts an ssh agent using you
 ./deploy.sh setup_nginx
 ```
 
-### Deployment Script Commands
+### deploy.sh Commands
 
 **Build & Deploy:**
 - `build` - Build React frontend with Vite
@@ -342,14 +341,6 @@ nginx configuration:
 - `/health` endpoint proxied to backend
 - Gzip compression enabled
 - Static asset caching (1 year)
-
-### Alternative Deployment Options
-
-The application can also be deployed to cloud platforms:
-
-- **Backend:** Railway, Render, DigitalOcean, Heroku
-- **Frontend:** Vercel, Netlify, Cloudflare Pages
-- **Full-stack:** AWS, GCP, Azure
 
 ## License
 

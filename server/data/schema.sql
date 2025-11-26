@@ -4,7 +4,8 @@
 
 CREATE TABLE IF NOT EXISTS quizes (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  subject TEXT
+  subject TEXT,
+  duration INTEGER NOT NULL DEFAULT 600
 );
 
 CREATE TABLE IF NOT EXISTS questions (
@@ -34,9 +35,9 @@ DELETE FROM options;
 DELETE FROM questions;
 DELETE FROM quizes;
 
--- seed singe quiz
-INSERT INTO quizes (id, subject) VALUES
-( 1, 'Stocks and the Stock Market');
+-- seed single quiz (duration in seconds: 600 = 10 minutes)
+INSERT INTO quizes (id, subject, duration) VALUES
+(1, 'Stocks and the Stock Market', 600);
 
 -- Seed questions
 INSERT INTO questions (id, question_text, quiz_id) VALUES

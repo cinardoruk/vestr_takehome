@@ -34,14 +34,10 @@ router.get("/quiz", (req, res) => {
   try {
     const db = getDatabase();
 
-    //- const quiz = db.prepare("SELECT * FROM quizes WHERE id = 1").get();
-    //- const questions = db.prepare("SELECT * FROM questions").all();
+    // Get quiz metadata
+    const quizMetadata = db.prepare("SELECT * FROM quizes WHERE id = 1").get();
 
-    //- const data = {
-    //-   quiz: quiz,
-    //-   questions: questions,
-    //- };
-
+    // Get questions with options
     const rows = db
       .prepare(
         `
@@ -58,14 +54,13 @@ router.get("/quiz", (req, res) => {
       .all();
 
     /*
-    now, to reshape this into the required json
+    reshape this into the required json shape
     right now, we have each option, but each question is repeated for each option
     we'll iterate over the rows, grabbing each unique question only once, but grabbing each option and placing it under the appropriate question
       */
     const questionsMap = {};
 
     rows.forEach((row) => {
-      // If we haven't seen this question yet, create it
       if (!questionsMap[row.question_id]) {
         questionsMap[row.question_id] = {
           id: row.question_id,
@@ -74,18 +69,18 @@ router.get("/quiz", (req, res) => {
         };
       }
 
-      // Add this option to the question's options array
       questionsMap[row.question_id].options.push({
         id: row.option_id,
         optionText: row.option_text,
       });
     });
 
-    // Convert map to array
     const questions = Object.values(questionsMap);
 
     const quiz = {
-      quiz_id: 1,
+      quiz_id: quizMetadata.id,
+      subject: quizMetadata.subject,
+      duration: quizMetadata.duration,
       questions: questions,
     };
 

@@ -65,6 +65,7 @@ export default function QuizBasicInfo({
       {state === "questions" && startTime && (
         <div>
           <Countdown
+            key={startTime.valueOf()}
             date={startTime.add(quizDuration, "seconds").valueOf()}
             renderer={renderer}
           />

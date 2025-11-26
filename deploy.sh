@@ -72,11 +72,11 @@ start_backend(){
 
 stop_backend(){
   ssh_to_vps "
-  PID=\$(lsof -ti :5000)
+  PID=\$(lsof -ti :$BACKEND_PORT)
   if [[ -n \"\$PID\" ]]; then
-    kill \$PID && echo '✅ Stopped backend on port 5000 (PID:'\$PID')'
+    kill \$PID && echo '✅ Stopped backend on port $BACKEND_PORT (PID:'\$PID')'
   else
-    echo 'ℹ  No process running on port 5000'
+    echo 'ℹ  No process running on port $BACKEND_PORT'
   fi
       "
 }
@@ -96,6 +96,41 @@ browse_logs(){
   ssh_to_vps "less $VPS_WORKTREE/server/server.log"
 }
 
+setup_nginx(){
+  echo "▶ Setting up nginx configuration..."
+
+  # Copy nginx config to VPS
+  scp -P "$VPS_SSH_PORT" -i "$VPS_SSH_KEY_PATH" "$NGINX_CONFIG" "$VPS_SSH:$VPS_NGINX_CONFIG"
+
+  # Enable the site and reload nginx
+  ssh_to_vps "
+    sudo ln -sf $VPS_NGINX_CONFIG $VPS_NGINX_ENABLED && \
+    sudo nginx -t && \
+    sudo systemctl reload nginx && \
+    echo '✅ Nginx configured and reloaded'
+  "
+}
+
+reload_nginx(){
+  echo "▶ Reloading nginx..."
+  ssh_to_vps "sudo nginx -t && sudo systemctl reload nginx && echo '✅ Nginx reloaded'"
+}
+
+stop_nginx(){
+  echo "▶ Stopping nginx..."
+  ssh_to_vps "sudo systemctl stop nginx && echo '✅ Nginx stopped'"
+}
+
+start_nginx(){
+  echo "▶ Starting nginx..."
+  ssh_to_vps "sudo systemctl start nginx && echo '✅ Nginx started'"
+}
+
+check_nginx_status(){
+  echo "▶ Checking nginx status..."
+  ssh_to_vps "sudo systemctl status nginx"
+}
+
 usage() {
   echo "Usage: $0 [COMMAND]"
   echo ""
@@ -109,6 +144,14 @@ usage() {
   echo "  restart_backend    - Restart the Express backend on VPS"
   echo "  check_logs         - View live server logs (tail -f)"
   echo "  browse_logs        - Browse server logs (less)"
+  echo ""
+  echo "Nginx Commands:"
+  echo "  setup_nginx        - Copy nginx config to VPS and enable site"
+  echo "  reload_nginx       - Reload nginx configuration"
+  echo "  start_nginx        - Start nginx service"
+  echo "  stop_nginx         - Stop nginx service"
+  echo "  check_nginx_status - Check nginx service status"
+  echo ""
   echo "  help               - Show this help message"
 }
 
@@ -151,6 +194,21 @@ main() {
 			  ;;
 		  browse_logs)
 			  browse_logs
+			  ;;
+		  setup_nginx)
+			  setup_nginx
+			  ;;
+		  reload_nginx)
+			  reload_nginx
+			  ;;
+		  start_nginx)
+			  start_nginx
+			  ;;
+		  stop_nginx)
+			  stop_nginx
+			  ;;
+		  check_nginx_status)
+			  check_nginx_status
 			  ;;
 		  help)
 			  usage

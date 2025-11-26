@@ -1,6 +1,7 @@
 # Vestr - Financial Literacy Quiz Application
 
-A full-stack web application for testing financial literacy knowledge with a focus on stocks and the stock market.
+A full-stack web application for a simple finance quiz: React app with quiz layout and logic pulls quiz questions/answers from an Express api.
+
 
 ## Tech Stack
 
@@ -15,7 +16,7 @@ A full-stack web application for testing financial literacy knowledge with a foc
 - SQLite database (better-sqlite3)
 - RESTful API design
 
-## Project Structure
+## Basic Project Structure
 
 ```
 vestr/
@@ -29,7 +30,7 @@ vestr/
 ### Prerequisites
 
 - Node.js 18+ installed
-- npm or yarn package manager
+- npm
 
 ### Installation
 
@@ -42,13 +43,13 @@ vestr/
 2. **Install backend dependencies**
    ```bash
    cd server
-   npm install
+   npm i
    ```
 
 3. **Install frontend dependencies**
    ```bash
    cd ../client
-   npm install
+   npm i
    ```
 
 ### Running the Application
@@ -78,35 +79,37 @@ The frontend will start on `http://localhost:5173`
 
 Visit `http://localhost:5173` in your browser to use the application.
 
-## Features
-
-### Quiz Interface
-- **Financial literacy test** with multiple-choice questions
-- **Timed quiz mode** with countdown timer
-- **Real-time answer tracking** using radio button selections
-- **Immediate feedback** with color-coded results (green for correct, red for incorrect)
-- **Score calculation** with pass/fail indicators
-
-### UI Components
-- **Top navigation bar** with logo, menu items, and search functionality
-- **Quiz header** with detailed scoring information
-- **Quiz info section** displaying question count and time limit
-- **Results display** showing total score, correct answers, time taken, and performance level
-- **Dark theme** with green accent colors matching the Figma design
-
-### Backend API
-- **RESTful API** serving quiz data
-- **SQLite database** with normalized schema
-- **Secure design** - correct answers stored separately and not exposed to frontend
-- **Automatic database seeding** on server startup
-
 ## Database Schema
 
+schema and some seed data is included in `server/data/schema.sql`, which gets run using db.exec() on startup(`server/src/db/database.js`).
+
 ```sql
-quizes          # Quiz metadata (subject, duration)
-questions       # Quiz questions
-options         # Answer options for each question
-correct_answers # Correct answer mappings (not exposed to client)
+CREATE TABLE IF NOT EXISTS quizes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  subject TEXT,
+  duration INTEGER NOT NULL DEFAULT 600
+);
+
+CREATE TABLE IF NOT EXISTS questions (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  question_text TEXT NOT NULL,
+  quiz_id INTEGER,
+  FOREIGN KEY(quiz_id) REFERENCES quizes(id)
+);
+
+CREATE TABLE IF NOT EXISTS options (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  option_text TEXT NOT NULL,
+  question_id INTEGER NOT NULL,
+  FOREIGN KEY(question_id) REFERENCES questions(id)
+);
+
+CREATE TABLE IF NOT EXISTS correct_answers (
+  question_id INTEGER PRIMARY KEY,
+  correct_option_id INTEGER NOT NULL,
+  FOREIGN KEY(question_id) REFERENCES questions(id),
+  FOREIGN KEY(correct_option_id) REFERENCES options(id)
+);
 ```
 
 ## Development Commands
@@ -123,7 +126,6 @@ npm run dev     # Start with nodemon (auto-reload)
 ```bash
 npm run dev     # Start Vite dev server
 npm run build   # Build for production
-npm run preview # Preview production build
 ```
 
 ## API Documentation
@@ -157,28 +159,20 @@ Returns quiz metadata and questions.
 
 **Note:** Correct answers are NOT included in the response for security.
 
+Also, the assignment specification didn't have this, but there should be a /api/quiz/answers POST route for submitting answers, and getting back a json indicating which questions were correct, which were incorrect(and the correct options for these). Time was scarce so I skipped this and hardcoded the correct answers in the React app.
+
 ## Environment Variables
 
 ### Server
 
-Create a `.env` file in the `server/` directory:
+Create a `.env` from the .env.example file in the `server/` directory:
+DATABASE_PATH is the .db file path that better_sqlite3 uses to create/access a db.
 
 ```env
 PORT=5000
 NODE_ENV=development
 DATABASE_PATH=./data/vestr.db
 ```
-
-## Design
-
-The UI follows a dark theme design with green accent colors as specified in the Figma mockup. Key design elements:
-
-- Dark background (`oklch(0.145 0 0)`)
-- Light text (`oklch(0.985 0 0)`)
-- Green accent color (`#00ff00`) for interactive elements
-- Clear visual hierarchy with proper spacing
-- Responsive layout
-
 ## Testing the Application
 
 1. Start both backend and frontend servers
@@ -192,7 +186,11 @@ The UI follows a dark theme design with green accent colors as specified in the 
 
 This project includes a deployment script (`deploy.sh`) for deploying to a VPS with nginx.
 
-### Prerequisites for Deployment
+If you already have an nginx configuration file serving a bunch of different `location`s for your domain, copy the related lines from the given `nginx.conf.example` and paste them in there.
+
+### The setup I used - adapt for your circumstances
+
+I presuppose ssh key auth for the vps: `deploy.sh` starts an ssh agent using your private key.
 
 - VPS with Ubuntu/Debian Linux
 - nginx installed on VPS
@@ -213,7 +211,28 @@ This project includes a deployment script (`deploy.sh`) for deploying to a VPS w
    VPS_WORKTREE="/var/www/vestr_demo"
    ```
 
-2. **Make deploy script executable**
+2. **Configure base URL for your deployment**
+
+   The current configuration deploys the app to a subpath (e.g., `your-domain.com/vestr`).
+
+   Edit `client/vite.config.ts` based on your deployment path:
+
+   ```typescript
+   // For subpath deployment (e.g., your-domain.com/vestr):
+   base: "/vestr/",
+
+   // For root path deployment (e.g., your-domain.com/):
+   base: "/",
+
+   // For other subpaths (e.g., your-domain.com/app/):
+   base: "/app/",
+   ```
+
+   Also update your nginx configuration accordingly:
+   - Root path: Use `root` directive instead of `location /vestr` with `alias`
+   - Subpath: Use `location /your-path` with `alias` and rewrite rules as shown in `nginx.conf.example`
+
+3. **Make deploy script executable**
 
    ```bash
    chmod +x deploy.sh
@@ -233,10 +252,11 @@ This project includes a deployment script (`deploy.sh`) for deploying to a VPS w
    - Build the React frontend with Vite
    - Sync frontend files to VPS
    - Sync backend files to VPS
-   - Install backend dependencies on VPS
+   - Install backend dependencies on VPS using npm
 
 2. **Setup nginx**
 
+   (SKIP IF YOU ALREADY HAVE AN NGINX SETUP AT THE VPS, SEE BEGINNING OF PRODUCTION DEPLOYMENT HEADING)
    ```bash
    ./deploy.sh setup_nginx
    ```
@@ -336,5 +356,7 @@ The application can also be deployed to cloud platforms:
 MIT
 
 ## Author
+
+Cinar Doruk
 
 Built as a take-home assignment for a full-stack developer position.

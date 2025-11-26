@@ -3,50 +3,6 @@ import { getDatabase } from "../db/database.js";
 
 const router = express.Router();
 
-/**
- * Example API endpoint
- * GET /api/examples
- */
-router.get("/examples", (req, res) => {
-  try {
-    const db = getDatabase();
-    const examples = db
-      .prepare("SELECT * FROM examples ORDER BY created_at DESC")
-      .all();
-    res.json({ data: examples });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-/**
- * Example API endpoint
- * POST /api/examples
- */
-router.post("/examples", (req, res) => {
-  try {
-    const { name, description } = req.body;
-
-    if (!name) {
-      return res.status(400).json({ error: "Name is required" });
-    }
-
-    const db = getDatabase();
-    const stmt = db.prepare(
-      "INSERT INTO examples (name, description) VALUES (?, ?)",
-    );
-    const result = stmt.run(name, description || null);
-
-    const example = db
-      .prepare("SELECT * FROM examples WHERE id = ?")
-      .get(result.lastInsertRowid);
-
-    res.status(201).json({ data: example });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 /*
 
 GET /api/quiz
@@ -55,15 +11,85 @@ Returns quiz metadata and a list of questions.
 
 Each question should have: id, questionText, options[], and some way of marking the correct option (not exposed to the frontend until submission, or not used on the client side).
 
-  */
+*/
 
-router.get("/api/quiz", (req, res) => {
+/*
+  the json shape I want
+  {
+    quiz_id: 1
+    questions: [
+      {
+        id:
+        questionText:
+        options: [
+          id
+          option_text
+        ]
+      },
+    ]
+  }
+*/
+
+router.get("/quiz", (req, res) => {
   try {
     const db = getDatabase();
-    const examples = db
-      .prepare("SELECT * FROM examples ORDER BY created_at DESC")
+
+    //- const quiz = db.prepare("SELECT * FROM quizes WHERE id = 1").get();
+    //- const questions = db.prepare("SELECT * FROM questions").all();
+
+    //- const data = {
+    //-   quiz: quiz,
+    //-   questions: questions,
+    //- };
+
+    const rows = db
+      .prepare(
+        `
+      SELECT
+        q.id as question_id,
+        q.question_text,
+        o.id as option_id,
+        o.option_text
+      FROM questions q
+      LEFT JOIN options o ON q.id = o.question_id
+      WHERE q.quiz_id = 1
+    `,
+      )
       .all();
-    res.json({ data: examples });
+
+    /*
+    now, to reshape this into the required json
+    right now, we have each option, but each question is repeated for each option
+    we'll iterate over the rows, grabbing each unique question only once, but grabbing each option and placing it under the appropriate question
+      */
+    const questionsMap = {};
+
+    rows.forEach((row) => {
+      // If we haven't seen this question yet, create it
+      if (!questionsMap[row.question_id]) {
+        questionsMap[row.question_id] = {
+          id: row.question_id,
+          questionText: row.question_text,
+          options: [],
+        };
+      }
+
+      // Add this option to the question's options array
+      questionsMap[row.question_id].options.push({
+        id: row.option_id,
+        optionText: row.option_text,
+      });
+    });
+
+    // Convert map to array
+    const questions = Object.values(questionsMap);
+
+    const data = {
+      quiz_id: 1,
+      questions: questions,
+    };
+
+    res.json({ data: data });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

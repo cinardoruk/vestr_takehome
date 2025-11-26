@@ -1,8 +1,10 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "./ui/button";
+import type { QuizQuestion } from "./Quiz";
 
 interface QuizContentProps {
+  questions: QuizQuestion[];
   answers: Record<number, number>;
   setAnswers: (answers: Record<number, number>) => void;
   onFinish: () => void;
@@ -11,23 +13,13 @@ interface QuizContentProps {
 }
 
 export default function QuizContent({
+  questions,
   answers,
   setAnswers,
   onFinish,
   onReset,
   showResults = false,
 }: QuizContentProps) {
-  //- Each question should have: id, questionText, options[], and some way of marking the correct option (not exposed to the frontend until submission, or not used on the client side).
-  interface Option {
-    id: number;
-    optionText: string;
-  }
-  interface QuizQuestion {
-    id: number;
-    questionText: string;
-    options: Option[];
-  }
-
   // Correct answer IDs for each question
   const correctAnswers: Record<number, number> = {
     1: 3, // Question 1 correct answer is option 3
@@ -35,7 +27,8 @@ export default function QuizContent({
     3: 10, // Question 3 correct answer is option 10
   };
 
-  const questions: QuizQuestion[] = [
+  // hardcoded questions array for before integrating the backend
+  /* const questions: QuizQuestion[] = [
     {
       id: 1,
       questionText:
@@ -109,7 +102,7 @@ export default function QuizContent({
         },
       ],
     },
-  ];
+  ]; */
 
   return (
     <div>

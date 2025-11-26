@@ -84,12 +84,12 @@ router.get("/quiz", (req, res) => {
     // Convert map to array
     const questions = Object.values(questionsMap);
 
-    const data = {
+    const quiz = {
       quiz_id: 1,
       questions: questions,
     };
 
-    res.json({ data: data });
+    res.json({ quiz: quiz });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import QuizHeader from "./QuizHeader";
 import QuizContent from "./QuizContent";
 import QuizBasicInfo from "./QuizBasicInfo";
@@ -15,20 +15,51 @@ import dayjs, { Dayjs } from "dayjs";
   */
 
 export type QuizState = "init" | "questions" | "results";
-//- export interface QuizAnswer {
-//-   question_id: number;
-//-   answer_id: number;
-//- }
 export type QuizAnswer = Record<number, number>;
+
+export interface QuizQuestion {
+  id: number;
+  questionText: string;
+  options: QuizOption[];
+}
+
+export interface QuizOption {
+  id: number;
+  option_text: string;
+}
 
 export default function Quiz() {
   // Duration in seconds
-  const quizDuration = 10;
+  const [quizDuration, setQuizDuration] = useState<number>(60);
 
   const [quizState, setQuizState] = useState<QuizState>("init");
   const [startTime, setStartTime] = useState<Dayjs | null>(null);
   const [endTime, setEndTime] = useState<Dayjs | null>(null);
   const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [questions, setQuestions] = useState<QuizQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch quiz data once on mount
+  useEffect(() => {
+    fetch("http://localhost:5000/api/quiz", { cache: "no-store" })
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then((data) => {
+        setQuestions(data.quiz.questions);
+        setQuizDuration(data.quiz.duration);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to load quiz:", err);
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
 
   const handleFinish = () => {
     setEndTime(dayjs());
@@ -41,6 +72,14 @@ export default function Quiz() {
     setEndTime(null);
     setAnswers({});
   };
+
+  if (loading) {
+    return <div>Loading quiz...</div>;
+  }
+
+  if (error) {
+    return <div>Error loading quiz: {error}</div>;
+  }
 
   return (
     <div>
@@ -60,6 +99,7 @@ export default function Quiz() {
       {(quizState === "questions" || quizState === "results") && (
         <QuizContent
           {...{
+            questions,
             answers,
             setAnswers,
             onFinish: handleFinish,
